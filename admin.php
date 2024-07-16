@@ -7,21 +7,25 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['delete_user'])) {
-        $user_id = htmlspecialchars(strip_tags($_POST['user_id']));
-        $query = "DELETE FROM users WHERE id = :user_id";
-        $stmt = $conn->prepare($query);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->execute();
-    }
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
+    $username = htmlspecialchars(strip_tags($_POST['username']));
+    $password = password_hash(htmlspecialchars(strip_tags($_POST['password'])), PASSWORD_DEFAULT);
+    $role = htmlspecialchars(strip_tags($_POST['role']));
 
-    if (isset($_POST['delete_animal'])) {
-        $animal_id = htmlspecialchars(strip_tags($_POST['animal_id']));
-        $query = "DELETE FROM animaux WHERE id = :animal_id";
+    if (!empty($username) && !empty($password) && !empty($role)) {
+        $query = "INSERT INTO users (username, password, role) VALUES (:username, :password, :role)";
         $stmt = $conn->prepare($query);
-        $stmt->bindParam(':animal_id', $animal_id);
-        $stmt->execute();
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':password', $password);
+        $stmt->bindParam(':role', $role);
+
+        if ($stmt->execute()) {
+            $message = "Utilisateur ajouté avec succès!";
+        } else {
+            $message = "Erreur lors de l'ajout de l'utilisateur.";
+        }
+    } else {
+        $message = "Veuillez remplir tous les champs.";
     }
 }
 
@@ -59,20 +63,21 @@ try {
                 <div class="card">
                     <div class="card-header">Utilisateurs</div>
                     <div class="card-body">
-                        <?php foreach ($users as $user) : ?>
-                            <div class="user-card">
-                                <h5><?= htmlspecialchars($user['username']) ?></h5>
-                                <p>Nom: <?= htmlspecialchars($user['nom']) ?></p>
-                                <p>Prénom: <?= htmlspecialchars($user['prenom']) ?></p>
-                                <p>Email: <?= htmlspecialchars($user['email']) ?></p>
-                                <p>Rôle: <?= htmlspecialchars($user['role']) ?></p>
-                                <form method="post" action="admin.php">
-                                    <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                                    <button type="submit" name="delete_user" class="btn btn-danger btn-sm">Supprimer</button>
-                                </form>
-                            </div>
-                            <hr>
-                        <?php endforeach; ?>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#addUserModal">Ajouter un utilisateur</button>
+                        <?php if (isset($message)) : ?>
+                            <p><?= $message ?></p>
+                        <?php endif; ?>
+                        <ul class="list-group">
+                            <?php foreach ($users as $user) : ?>
+                                <li class="list-group-item">
+                                    <?= htmlspecialchars($user['username']) ?> - <?= htmlspecialchars($user['role']) ?>
+                                    <form action="delete_user.php" method="POST" class="float-right">
+                                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                                    </form>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -82,35 +87,60 @@ try {
                 <div class="card">
                     <div class="card-header">Animaux</div>
                     <div class="card-body">
-                        <?php foreach ($animals as $animal) : ?>
-                            <div class="animal-card">
-                                <h5><?= htmlspecialchars($animal['nom']) ?></h5>
-                                <p>Type: <?= htmlspecialchars($animal['type']) ?></p>
-                                <p>Race: <?= htmlspecialchars($animal['race']) ?></p>
-                                <p>Alimentation: <?= htmlspecialchars($animal['alimentation']) ?></p>
-                                <p>Nombre de repas: <?= htmlspecialchars($animal['nombre_de_repas']) ?></p>
-                                <form method="post" action="admin.php">
-                                    <input type="hidden" name="animal_id" value="<?= $animal['id'] ?>">
-                                    <button type="submit" name="delete_animal" class="btn btn-danger btn-sm">Supprimer</button>
-                                </form>
-                            </div>
-                            <hr>
-                        <?php endforeach; ?>
+                        <ul class="list-group">
+                            <?php foreach ($animals as $animal) : ?>
+                                <li class="list-group-item">
+                                    <?= htmlspecialchars($animal['nom']) ?> (<?= htmlspecialchars($animal['type']) ?>)
+                                    <form action="delete_animal.php" method="POST" class="float-right">
+                                        <input type="hidden" name="animal_id" value="<?= $animal['id'] ?>">
+                                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                                    </form>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
                     </div>
+                </div>
+            </div>
+        </div>
+        <a href="logout.php" class="btn btn-secondary mt-3">Déconnexion</a>
+    </div>
+
+    <!-- Modal Ajouter un Utilisateur -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalLabel">Ajouter un Utilisateur</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="admin.php" method="POST">
+                        <div class="form-group">
+                            <label for="username">Nom d'utilisateur</label>
+                            <input type="text" name="username" id="username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Mot de passe</label>
+                            <input type="password" name="password" id="password" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Rôle</label>
+                            <select name="role" id="role" class="form-control" required>
+                                <option value="user">Utilisateur</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <button type="submit" name="add_user" class="btn btn-primary">Ajouter</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="logout">
-        <form action="logout.php" method="post">
-            <button type="submit" class="btn btn-secondary">Déconnexion</button>
-        </form>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.min.js"></script>
 </body>
 
 </html>
