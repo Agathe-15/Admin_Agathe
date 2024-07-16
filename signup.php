@@ -43,28 +43,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <header>
         <div class="container">
-            <h1>Créer un compte</h1>
+            <h1>Le Planning de mes Animaux</h1>
         </div>
     </header>
     <div class="container content">
-        <div>
+        <div class="signup-form">
             <h2>Inscription</h2>
             <form action="signup.php" method="POST">
-                <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
-                <input type="password" name="password" placeholder="Mot de passe" required><br>
-                <input type="email" name="email" placeholder="Email" required><br>
                 <input type="text" name="nom" placeholder="Nom" required><br>
                 <input type="text" name="prenom" placeholder="Prénom" required><br>
-                <button type="submit">Créer un compte</button>
+                <input type="email" name="email" placeholder="Email" required><br>
+                <input type="password" name="password" placeholder="Mot de passe" required><br>
+                <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
+                <button type="submit">Inscription</button>
             </form>
             <?php if (isset($_SESSION['error'])) : ?>
                 <p style="color: red;"><?= $_SESSION['error'] ?></p>
                 <?php unset($_SESSION['error']); ?>
             <?php endif; ?>
-            <p>Déjà un compte ? <a href="login.php">Connectez-vous ici</a></p>
         </div>
     </div>
-
+    <footer>
+        <p>&copy; 2023</p>
+    </footer>
 </body>
 
 </html>
