@@ -8,13 +8,19 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
+    $nom = htmlspecialchars(strip_tags($_POST['nom']));
+    $prenom = htmlspecialchars(strip_tags($_POST['prenom']));
+    $email = htmlspecialchars(strip_tags($_POST['email']));
     $username = htmlspecialchars(strip_tags($_POST['username']));
     $password = password_hash(htmlspecialchars(strip_tags($_POST['password'])), PASSWORD_DEFAULT);
     $role = htmlspecialchars(strip_tags($_POST['role']));
 
-    if (!empty($username) && !empty($password) && !empty($role)) {
-        $query = "INSERT INTO users (username, password, role) VALUES (:username, :password, :role)";
+    if (!empty($nom) && !empty($prenom) && !empty($email) && !empty($username) && !empty($password) && !empty($role)) {
+        $query = "INSERT INTO users (nom, prenom, email, username, password, role) VALUES (:nom, :prenom, :email, :username, :password, :role)";
         $stmt = $conn->prepare($query);
+        $stmt->bindParam(':nom', $nom);
+        $stmt->bindParam(':prenom', $prenom);
+        $stmt->bindParam(':email', $email);
         $stmt->bindParam(':username', $username);
         $stmt->bindParam(':password', $password);
         $stmt->bindParam(':role', $role);
@@ -26,6 +32,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
         }
     } else {
         $message = "Veuillez remplir tous les champs.";
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_user'])) {
+    $user_id = htmlspecialchars(strip_tags($_POST['user_id']));
+
+    if (!empty($user_id)) {
+        $query = "DELETE FROM users WHERE id = :id";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':id', $user_id);
+
+        if ($stmt->execute()) {
+            $message = "Utilisateur supprimé avec succès!";
+        } else {
+            $message = "Erreur lors de la suppression de l'utilisateur.";
+        }
+    } else {
+        $message = "ID de l'utilisateur non fourni.";
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['delete_animal'])) {
+    $animal_id = htmlspecialchars(strip_tags($_POST['animal_id']));
+
+    if (!empty($animal_id)) {
+        $query = "DELETE FROM animaux WHERE id = :id";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':id', $animal_id);
+
+        if ($stmt->execute()) {
+            $message = "Animal supprimé avec succès!";
+        } else {
+            $message = "Erreur lors de la suppression de l'animal.";
+        }
+    } else {
+        $message = "ID de l'animal non fourni.";
     }
 }
 
@@ -70,10 +112,10 @@ try {
                         <ul class="list-group">
                             <?php foreach ($users as $user) : ?>
                                 <li class="list-group-item">
-                                    <?= htmlspecialchars($user['username']) ?> - <?= htmlspecialchars($user['role']) ?>
-                                    <form action="delete_user.php" method="POST" class="float-right">
+                                    <?= htmlspecialchars($user['nom']) ?> <?= htmlspecialchars($user['prenom']) ?> - <?= htmlspecialchars($user['email']) ?> - <?= htmlspecialchars($user['username']) ?> - <?= htmlspecialchars($user['role']) ?>
+                                    <form action="admin.php" method="POST" class="float-right">
                                         <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                                        <button type="submit" name="delete_user" class="btn btn-danger btn-sm">Supprimer</button>
                                     </form>
                                 </li>
                             <?php endforeach; ?>
@@ -91,9 +133,9 @@ try {
                             <?php foreach ($animals as $animal) : ?>
                                 <li class="list-group-item">
                                     <?= htmlspecialchars($animal['nom']) ?> (<?= htmlspecialchars($animal['type']) ?>)
-                                    <form action="delete_animal.php" method="POST" class="float-right">
+                                    <form action="admin.php" method="POST" class="float-right">
                                         <input type="hidden" name="animal_id" value="<?= $animal['id'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                                        <button type="submit" name="delete_animal" class="btn btn-danger btn-sm">Supprimer</button>
                                     </form>
                                 </li>
                             <?php endforeach; ?>
@@ -117,6 +159,18 @@ try {
                 </div>
                 <div class="modal-body">
                     <form action="admin.php" method="POST">
+                        <div class="form-group">
+                            <label for="nom">Nom</label>
+                            <input type="text" name="nom" id="nom" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="prenom">Prénom</label>
+                            <input type="text" name="prenom" id="prenom" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" id="email" class="form-control" required>
+                        </div>
                         <div class="form-group">
                             <label for="username">Nom d'utilisateur</label>
                             <input type="text" name="username" id="username" class="form-control" required>
