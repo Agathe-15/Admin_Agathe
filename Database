@@ -1,0 +1,25 @@
+CREATE DATABASE IF NOT EXISTS AdminAgathe;
+USE AdminAgathe;
+
+-- Table des utilisateurs
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    role ENUM('admin', 'user') NOT NULL DEFAULT 'user',
+    nom VARCHAR(50),
+    prenom VARCHAR(50)
+);
+
+-- Table des animaux
+CREATE TABLE IF NOT EXISTS animaux (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    nom VARCHAR(50) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    race VARCHAR(50) NOT NULL,
+    alimentation VARCHAR(255) NOT NULL,
+    nombre_de_repas INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
