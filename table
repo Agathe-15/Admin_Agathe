@@ -1,0 +1,13 @@
+
+-- Ajout des animaux pour chaque utilisateur
+INSERT INTO animaux (utilisateur_id, nom, type, race, alimentation, nombre_de_repas) VALUES
+(2, 'Rex', 'Chien', 'Labrador', 'Croquettes', 2),
+(3, 'Mia', 'Chat', 'Siamois', 'Pâtée', 3),
+(4, 'Coco', 'Oiseau', 'Perroquet', 'Graines', 2),
+(5, 'Bella', 'Chien', 'Berger Allemand', 'Croquettes', 2),
+(6, 'Nemo', 'Poisson', 'Clown', 'Flocons', 1),
+(7, 'Luna', 'Chat', 'Bengal', 'Pâtée', 3),
+(8, 'Rocky', 'Chien', 'Bouledogue', 'Croquettes', 2),
+(9, 'Chico', 'Rongeur', 'Hamster', 'Graines', 1),
+(10, 'Oscar', 'Chien', 'Golden Retriever', 'Croquettes', 2),
+(11, 'Mimi', 'Chat', 'Persan', 'Pâtée', 3);
