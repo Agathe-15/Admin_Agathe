@@ -28,8 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
     }
 }
 
-$query_users = "SELECT * FROM users WHERE id = :id";
-$stmt = $conn->prepare($query_users);
+$query_user = "SELECT * FROM users WHERE id = :id";
+$stmt = $conn->prepare($query_user);
 $stmt->bindParam(':id', $_SESSION['user_id']);
 $stmt->execute();
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
