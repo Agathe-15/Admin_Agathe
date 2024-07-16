@@ -119,7 +119,7 @@ try {
     <div class="container">
         <div class="row">
             <!-- Utilisateurs Section -->
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">Utilisateurs</div>
                     <div class="card-body">
@@ -127,58 +127,162 @@ try {
                         <?php if (isset($message)) : ?>
                             <p><?= $message ?></p>
                         <?php endif; ?>
-                        <ul class="list-group">
-                            <?php foreach ($users as $user) : ?>
-                                <li class="list-group-item">
-                                    <form action="admin.php" method="POST">
-                                        <input type="hidden" name="user_id" value="<?= htmlspecialchars($user['id']) ?>">
-                                        Nom : <input type="text" name="nom" value="<?= htmlspecialchars($user['nom']) ?>"><br>
-                                        Prénom : <input type="text" name="prenom" value="<?= htmlspecialchars($user['prenom']) ?>"><br>
-                                        Email : <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>"><br>
-                                        Nom d'utilisateur : <input type="text" name="username" value="<?= htmlspecialchars($user['username']) ?>"><br>
-                                        Rôle : 
-                                        <select name="role">
-                                            <option value="user" <?= $user['role'] == 'user' ? 'selected' : '' ?>>Utilisateur</option>
-                                            <option value="admin" <?= $user['role'] == 'admin' ? 'selected' : '' ?>>Admin</option>
-                                        </select>
-                                        <br>
-                                        <button type="submit" name="update_user" class="btn btn-primary btn-sm">Modifier</button>
-                                    </form>
-                                    <form action="delete_user.php" method="POST" class="float-right">
-                                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
-                                    </form>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom d'utilisateur</th>
+                                    <th>Email</th>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Rôle</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($users as $user) : ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($user['id']) ?></td>
+                                        <td><?= htmlspecialchars($user['username']) ?></td>
+                                        <td><?= htmlspecialchars($user['email']) ?></td>
+                                        <td><?= htmlspecialchars($user['nom']) ?></td>
+                                        <td><?= htmlspecialchars($user['prenom']) ?></td>
+                                        <td><?= htmlspecialchars($user['role']) ?></td>
+                                        <td>
+                                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editUserModal<?= $user['id'] ?>">Modifier</button>
+                                            <form action="delete_user.php" method="POST" style="display:inline;">
+                                                <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                                <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Modal Modifier Utilisateur -->
+                                    <div class="modal fade" id="editUserModal<?= $user['id'] ?>" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel<?= $user['id'] ?>" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editUserModalLabel<?= $user['id'] ?>">Modifier Utilisateur</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="admin.php" method="POST">
+                                                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
+                                                        <div class="form-group">
+                                                            <label for="username">Nom d'utilisateur</label>
+                                                            <input type="text" name="username" id="username" class="form-control" value="<?= htmlspecialchars($user['username']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="email">Email</label>
+                                                            <input type="email" name="email" id="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="nom">Nom</label>
+                                                            <input type="text" name="nom" id="nom" class="form-control" value="<?= htmlspecialchars($user['nom']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="prenom">Prénom</label>
+                                                            <input type="text" name="prenom" id="prenom" class="form-control" value="<?= htmlspecialchars($user['prenom']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="role">Rôle</label>
+                                                            <select name="role" id="role" class="form-control" required>
+                                                                <option value="user" <?= $user['role'] == 'user' ? 'selected' : '' ?>>Utilisateur</option>
+                                                                <option value="admin" <?= $user['role'] == 'admin' ? 'selected' : '' ?>>Admin</option>
+                                                            </select>
+                                                        </div>
+                                                        <button type="submit" name="update_user" class="btn btn-primary">Mettre à jour</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
 
             <!-- Animaux Section -->
-            <div class="col-md-6">
+            <div class="col-md-12 mt-4">
                 <div class="card">
                     <div class="card-header">Animaux</div>
                     <div class="card-body">
-                        <ul class="list-group">
-                            <?php foreach ($animals as $animal) : ?>
-                                <li class="list-group-item">
-                                    <form action="admin.php" method="POST">
-                                        <input type="hidden" name="animal_id" value="<?= htmlspecialchars($animal['id']) ?>">
-                                        Nom : <input type="text" name="nom" value="<?= htmlspecialchars($animal['nom']) ?>"><br>
-                                        Type : <input type="text" name="type" value="<?= htmlspecialchars($animal['type']) ?>"><br>
-                                        Race : <input type="text" name="race" value="<?= htmlspecialchars($animal['race']) ?>"><br>
-                                        Alimentation : <input type="text" name="alimentation" value="<?= htmlspecialchars($animal['alimentation']) ?>"><br>
-                                        Nombre de repas : <input type="number" name="nombre_de_repas" value="<?= htmlspecialchars($animal['nombre_de_repas']) ?>"><br>
-                                        <button type="submit" name="update_animal" class="btn btn-primary btn-sm">Modifier</button>
-                                    </form>
-                                    <form action="delete_animal.php" method="POST" class="float-right">
-                                        <input type="hidden" name="animal_id" value="<?= $animal['id'] ?>">
-                                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
-                                    </form>
-                                </li>
-                            <?php endforeach; ?>
-                        </ul>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nom</th>
+                                    <th>Type</th>
+                                    <th>Race</th>
+                                    <th>Alimentation</th>
+                                    <th>Nombre de repas</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($animals as $animal) : ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($animal['id']) ?></td>
+                                        <td><?= htmlspecialchars($animal['nom']) ?></td>
+                                        <td><?= htmlspecialchars($animal['type']) ?></td>
+                                        <td><?= htmlspecialchars($animal['race']) ?></td>
+                                        <td><?= htmlspecialchars($animal['alimentation']) ?></td>
+                                        <td><?= htmlspecialchars($animal['nombre_de_repas']) ?></td>
+                                        <td>
+                                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editAnimalModal<?= $animal['id'] ?>">Modifier</button>
+                                            <form action="delete_animal.php" method="POST" style="display:inline;">
+                                                <input type="hidden" name="animal_id" value="<?= $animal['id'] ?>">
+                                                <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Modal Modifier Animal -->
+                                    <div class="modal fade" id="editAnimalModal<?= $animal['id'] ?>" tabindex="-1" role="dialog" aria-labelledby="editAnimalModalLabel<?= $animal['id'] ?>" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editAnimalModalLabel<?= $animal['id'] ?>">Modifier Animal</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <form action="admin.php" method="POST">
+                                                        <input type="hidden" name="animal_id" value="<?= $animal['id'] ?>">
+                                                        <div class="form-group">
+                                                            <label for="nom">Nom</label>
+                                                            <input type="text" name="nom" id="nom" class="form-control" value="<?= htmlspecialchars($animal['nom']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="type">Type</label>
+                                                            <input type="text" name="type" id="type" class="form-control" value="<?= htmlspecialchars($animal['type']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="race">Race</label>
+                                                            <input type="text" name="race" id="race" class="form-control" value="<?= htmlspecialchars($animal['race']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="alimentation">Alimentation</label>
+                                                            <input type="text" name="alimentation" id="alimentation" class="form-control" value="<?= htmlspecialchars($animal['alimentation']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="nombre_de_repas">Nombre de repas</label>
+                                                            <input type="number" name="nombre_de_repas" id="nombre_de_repas" class="form-control" value="<?= htmlspecialchars($animal['nombre_de_repas']) ?>" required>
+                                                        </div>
+                                                        <button type="submit" name="update_animal" class="btn btn-primary">Mettre à jour</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
