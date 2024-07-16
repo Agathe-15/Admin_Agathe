@@ -61,11 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <p style="color: red;"><?= $_SESSION['error'] ?></p>
                 <?php unset($_SESSION['error']); ?>
             <?php endif; ?>
+            <p>Déjà un compte ? <a href="login.php">Connectez-vous ici</a></p>
         </div>
     </div>
-    <footer>
-        <p>&copy; 2023</p>
-    </footer>
+
 </body>
 
 </html>
