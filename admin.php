@@ -7,85 +7,31 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['add_user'])) {
-        $username = htmlspecialchars(strip_tags($_POST['username']));
-        $password = password_hash(htmlspecialchars(strip_tags($_POST['password'])), PASSWORD_DEFAULT);
-        $role = htmlspecialchars(strip_tags($_POST['role']));
-        $email = htmlspecialchars(strip_tags($_POST['email']));
-        $nom = htmlspecialchars(strip_tags($_POST['nom']));
-        $prenom = htmlspecialchars(strip_tags($_POST['prenom']));
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_user'])) {
+    $username = htmlspecialchars(strip_tags($_POST['username']));
+    $password = password_hash(htmlspecialchars(strip_tags($_POST['password'])), PASSWORD_DEFAULT);
+    $role = htmlspecialchars(strip_tags($_POST['role']));
+    $email = htmlspecialchars(strip_tags($_POST['email']));
+    $nom = htmlspecialchars(strip_tags($_POST['nom']));
+    $prenom = htmlspecialchars(strip_tags($_POST['prenom']));
 
-        if (!empty($username) && !empty($password) && !empty($role) && !empty($email) && !empty($nom) && !empty($prenom)) {
-            $query = "INSERT INTO users (username, password, role, email, nom, prenom) VALUES (:username, :password, :role, :email, :nom, :prenom)";
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(':username', $username);
-            $stmt->bindParam(':password', $password);
-            $stmt->bindParam(':role', $role);
-            $stmt->bindParam(':email', $email);
-            $stmt->bindParam(':nom', $nom);
-            $stmt->bindParam(':prenom', $prenom);
+    if (!empty($username) && !empty($password) && !empty($role) && !empty($email) && !empty($nom) && !empty($prenom)) {
+        $query = "INSERT INTO users (username, password, role, email, nom, prenom) VALUES (:username, :password, :role, :email, :nom, :prenom)";
+        $stmt = $conn->prepare($query);
+        $stmt->bindParam(':username', $username);
+        $stmt->bindParam(':password', $password);
+        $stmt->bindParam(':role', $role);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':nom', $nom);
+        $stmt->bindParam(':prenom', $prenom);
 
-            if ($stmt->execute()) {
-                $message = "Utilisateur ajouté avec succès!";
-            } else {
-                $message = "Erreur lors de l'ajout de l'utilisateur.";
-            }
+        if ($stmt->execute()) {
+            $message = "Utilisateur ajouté avec succès!";
         } else {
-            $message = "Veuillez remplir tous les champs.";
+            $message = "Erreur lors de l'ajout de l'utilisateur.";
         }
-    } elseif (isset($_POST['update_user'])) {
-        $user_id = htmlspecialchars(strip_tags($_POST['user_id']));
-        $username = htmlspecialchars(strip_tags($_POST['username']));
-        $email = htmlspecialchars(strip_tags($_POST['email']));
-        $nom = htmlspecialchars(strip_tags($_POST['nom']));
-        $prenom = htmlspecialchars(strip_tags($_POST['prenom']));
-        $role = htmlspecialchars(strip_tags($_POST['role']));
-
-        if (!empty($user_id) && !empty($username) && !empty($email) && !empty($nom) && !empty($prenom) && !empty($role)) {
-            $query = "UPDATE users SET username = :username, email = :email, nom = :nom, prenom = :prenom, role = :role WHERE id = :user_id";
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(':user_id', $user_id);
-            $stmt->bindParam(':username', $username);
-            $stmt->bindParam(':email', $email);
-            $stmt->bindParam(':nom', $nom);
-            $stmt->bindParam(':prenom', $prenom);
-            $stmt->bindParam(':role', $role);
-
-            if ($stmt->execute()) {
-                $message = "Utilisateur mis à jour avec succès!";
-            } else {
-                $message = "Erreur lors de la mise à jour de l'utilisateur.";
-            }
-        } else {
-            $message = "Veuillez remplir tous les champs.";
-        }
-    } elseif (isset($_POST['update_animal'])) {
-        $animal_id = htmlspecialchars(strip_tags($_POST['animal_id']));
-        $nom = htmlspecialchars(strip_tags($_POST['nom']));
-        $type = htmlspecialchars(strip_tags($_POST['type']));
-        $race = htmlspecialchars(strip_tags($_POST['race']));
-        $alimentation = htmlspecialchars(strip_tags($_POST['alimentation']));
-        $nombre_de_repas = htmlspecialchars(strip_tags($_POST['nombre_de_repas']));
-
-        if (!empty($animal_id) && !empty($nom) && !empty($type) && !empty($race) && !empty($alimentation) && !empty($nombre_de_repas)) {
-            $query = "UPDATE animaux SET nom = :nom, type = :type, race = :race, alimentation = :alimentation, nombre_de_repas = :nombre_de_repas WHERE id = :animal_id";
-            $stmt = $conn->prepare($query);
-            $stmt->bindParam(':animal_id', $animal_id);
-            $stmt->bindParam(':nom', $nom);
-            $stmt->bindParam(':type', $type);
-            $stmt->bindParam(':race', $race);
-            $stmt->bindParam(':alimentation', $alimentation);
-            $stmt->bindParam(':nombre_de_repas', $nombre_de_repas);
-
-            if ($stmt->execute()) {
-                $message = "Animal mis à jour avec succès!";
-            } else {
-                $message = "Erreur lors de la mise à jour de l'animal.";
-            }
-        } else {
-            $message = "Veuillez remplir tous les champs.";
-        }
+    } else {
+        $message = "Veuillez remplir tous les champs.";
     }
 }
 
@@ -119,7 +65,7 @@ try {
     <div class="container">
         <div class="row">
             <!-- Utilisateurs Section -->
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">Utilisateurs</div>
                     <div class="card-body">
@@ -132,10 +78,10 @@ try {
                                 <tr>
                                     <th>ID</th>
                                     <th>Nom d'utilisateur</th>
-                                    <th>Email</th>
+                                    <th>Rôle</th>
                                     <th>Nom</th>
                                     <th>Prénom</th>
-                                    <th>Rôle</th>
+                                    <th>Email</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -144,10 +90,10 @@ try {
                                     <tr>
                                         <td><?= htmlspecialchars($user['id']) ?></td>
                                         <td><?= htmlspecialchars($user['username']) ?></td>
-                                        <td><?= htmlspecialchars($user['email']) ?></td>
+                                        <td><?= htmlspecialchars($user['role']) ?></td>
                                         <td><?= htmlspecialchars($user['nom']) ?></td>
                                         <td><?= htmlspecialchars($user['prenom']) ?></td>
-                                        <td><?= htmlspecialchars($user['role']) ?></td>
+                                        <td><?= htmlspecialchars($user['email']) ?></td>
                                         <td>
                                             <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editUserModal<?= $user['id'] ?>">Modifier</button>
                                             <form action="delete_user.php" method="POST" style="display:inline;">
@@ -175,16 +121,16 @@ try {
                                                             <input type="text" name="username" id="username" class="form-control" value="<?= htmlspecialchars($user['username']) ?>" required>
                                                         </div>
                                                         <div class="form-group">
-                                                            <label for="email">Email</label>
-                                                            <input type="email" name="email" id="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
-                                                        </div>
-                                                        <div class="form-group">
                                                             <label for="nom">Nom</label>
                                                             <input type="text" name="nom" id="nom" class="form-control" value="<?= htmlspecialchars($user['nom']) ?>" required>
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="prenom">Prénom</label>
                                                             <input type="text" name="prenom" id="prenom" class="form-control" value="<?= htmlspecialchars($user['prenom']) ?>" required>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label for="email">Email</label>
+                                                            <input type="email" name="email" id="email" class="form-control" value="<?= htmlspecialchars($user['email']) ?>" required>
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="role">Rôle</label>
@@ -207,7 +153,7 @@ try {
             </div>
 
             <!-- Animaux Section -->
-            <div class="col-md-12 mt-4">
+            <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">Animaux</div>
                     <div class="card-body">
@@ -341,3 +287,4 @@ try {
 </body>
 
 </html>
+
