@@ -2,28 +2,26 @@
 session_start();
 include_once __DIR__ . '/../api/config.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
-    header("Location: login.php");
-    exit();
-}
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $user_id = htmlspecialchars(strip_tags($_POST['user_id']));
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['animal_id'])) {
-    $animal_id = htmlspecialchars(strip_tags($_POST['animal_id']));
-
-    if (!empty($animal_id)) {
-        $query = "DELETE FROM animaux WHERE id = :id";
+    if (!empty($user_id)) {
+        $query = "DELETE FROM users WHERE id = :user_id";
         $stmt = $conn->prepare($query);
-        $stmt->bindParam(':id', $animal_id);
+        $stmt->bindParam(':user_id', $user_id);
 
         if ($stmt->execute()) {
-            header("Location: admin.php?message=Animal supprimé avec succès!");
+            header("Location: admin.php");
+            exit();
         } else {
-            header("Location: admin.php?message=Erreur lors de la suppression de l'animal.");
+            $_SESSION['error'] = "Erreur lors de la suppression de l'utilisateur.";
+            header("Location: admin.php");
+            exit();
         }
     } else {
-        header("Location: admin.php?message=ID de l'animal non fourni.");
+        $_SESSION['error'] = "ID utilisateur manquant.";
+        header("Location: admin.php");
+        exit();
     }
-} else {
-    header("Location: admin.php?message=Requête invalide.");
 }
-exit();
+?>
