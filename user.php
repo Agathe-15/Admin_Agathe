@@ -7,33 +7,32 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_animal'])) {
-    $user_id = htmlspecialchars(strip_tags($_POST['user_id']));
-    $nom = htmlspecialchars(strip_tags($_POST['nom']));
-    $type = htmlspecialchars(strip_tags($_POST['type']));
-    $race = htmlspecialchars(strip_tags($_POST['race']));
-    $alimentation = htmlspecialchars(strip_tags($_POST['alimentation']));
-    $nombre_de_repas = htmlspecialchars(strip_tags($_POST['nombre_de_repas']));
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['change_password'])) {
+    $new_password = htmlspecialchars(strip_tags($_POST['new_password']));
+    $user_id = $_SESSION['user_id'];
 
-    if (!empty($user_id) && !empty($nom) && !empty($type) && !empty($race) && !empty($alimentation) && !empty($nombre_de_repas)) {
-        $query = "INSERT INTO animaux (user_id, nom, type, race, alimentation, nombre_de_repas) VALUES (:user_id, :nom, :type, :race, :alimentation, :nombre_de_repas)";
+    if (!empty($new_password)) {
+        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+        $query = "UPDATE users SET password = :password WHERE id = :id";
         $stmt = $conn->prepare($query);
-        $stmt->bindParam(':user_id', $user_id);
-        $stmt->bindParam(':nom', $nom);
-        $stmt->bindParam(':type', $type);
-        $stmt->bindParam(':race', $race);
-        $stmt->bindParam(':alimentation', $alimentation);
-        $stmt->bindParam(':nombre_de_repas', $nombre_de_repas);
+        $stmt->bindParam(':password', $hashed_password);
+        $stmt->bindParam(':id', $user_id);
 
         if ($stmt->execute()) {
-            $message = "Animal ajouté avec succès!";
+            $message = "Mot de passe modifié avec succès!";
         } else {
-            $message = "Erreur lors de l'ajout de l'animal.";
+            $message = "Erreur lors de la modification du mot de passe.";
         }
     } else {
-        $message = "Veuillez remplir tous les champs.";
+        $message = "Veuillez entrer un nouveau mot de passe.";
     }
 }
+
+$query_users = "SELECT * FROM users WHERE id = :id";
+$stmt = $conn->prepare($query_users);
+$stmt->bindParam(':id', $_SESSION['user_id']);
+$stmt->execute();
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $query_animals = "SELECT * FROM animaux WHERE user_id = :user_id";
 $stmt = $conn->prepare($query_animals);
@@ -48,68 +47,83 @@ $animals = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../public/css/user.css">
+    <link rel="stylesheet" href="../public/css/style.css">
     <title>User Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 
 <body>
-    <div class="container">
+    <header class="bg-primary text-white text-center py-3">
+        <div class="container">
+            <h1>Dashboard Utilisateur - Gestion des Animaux</h1>
+        </div>
+    </header>
+    <div class="container mt-4">
+        <?php if (isset($message)) : ?>
+            <div class="alert alert-info"><?= $message ?></div>
+        <?php endif; ?>
         <div class="row">
-            <!-- Utilisateur Section -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Utilisateur</div>
+            <div class="col-md-4">
+                <h2>Utilisateur</h2>
+                <div class="card mb-3">
                     <div class="card-body">
-                        <h5><?= htmlspecialchars($_SESSION['username']) ?></h5>
-                        <p>Nom: <?= htmlspecialchars($_SESSION['nom']) ?></p>
-                        <p>Prénom: <?= htmlspecialchars($_SESSION['prenom']) ?></p>
-                        <p>Email: <?= htmlspecialchars($_SESSION['email']) ?></p>
-                        <form method="post" action="change_password.php">
+                        <h5 class="card-title"><?= htmlspecialchars($user['nom']) ?> <?= htmlspecialchars($user['prenom']) ?></h5>
+                        <p>Email: <?= htmlspecialchars($user['email']) ?></p>
+                        <form action="user.php" method="POST">
                             <div class="form-group">
-                                <label for="password">Changer de mot de passe:</label>
-                                <input type="password" name="password" id="password" class="form-control" required>
+                                <label for="new_password">Changer de mot de passe :</label>
+                                <input type="password" name="new_password" class="form-control" required>
                             </div>
-                            <button type="submit" class="btn btn-primary">Modifier</button>
+                            <button type="submit" name="change_password" class="btn btn-primary">Modifier</button>
                         </form>
                     </div>
                 </div>
+                <a href="logout.php" class="btn btn-danger">Déconnexion</a>
             </div>
-
-            <!-- Animaux Section -->
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">Animaux</div>
+            <div class="col-md-8">
+                <h2>Animaux</h2>
+                <div class="card mb-3">
                     <div class="card-body">
-                        <?php foreach ($animals as $animal) : ?>
-                            <div class="animal-card">
-                                <h5><?= htmlspecialchars($animal['nom']) ?></h5>
-                                <p>Type: <?= htmlspecialchars($animal['type']) ?></p>
-                                <p>Race: <?= htmlspecialchars($animal['race']) ?></p>
-                                <p>Alimentation: <?= htmlspecialchars($animal['alimentation']) ?></p>
-                                <p>Nombre de repas: <?= htmlspecialchars($animal['nombre_de_repas']) ?></p>
-                                <form method="post" action="delete_animal.php">
-                                    <input type="hidden" name="animal_id" value="<?= $animal['id'] ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
-                                </form>
+                        <form action="user.php" method="POST">
+                            <div class="form-group">
+                                <input type="hidden" name="user_id" value="<?= $_SESSION['user_id'] ?>">
+                                <label for="type">Type:</label>
+                                <input type="text" name="type" class="form-control" required>
                             </div>
-                            <hr>
-                        <?php endforeach; ?>
+                            <div class="form-group">
+                                <label for="nom">Nom:</label>
+                                <input type="text" name="nom" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="race">Race:</label>
+                                <input type="text" name="race" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="alimentation">Alimentation:</label>
+                                <input type="text" name="alimentation" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="nombre_de_repas">Nombre de repas:</label>
+                                <input type="number" name="nombre_de_repas" class="form-control" required>
+                            </div>
+                            <button type="submit" name="add_animal" class="btn btn-primary">Ajouter</button>
+                        </form>
                     </div>
                 </div>
+                <h3>Liste de vos animaux</h3>
+                <ul class="list-group">
+                    <?php foreach ($animals as $animal) : ?>
+                        <li class="list-group-item">
+                            <?= htmlspecialchars($animal['nom']) ?> (<?= htmlspecialchars($animal['type']) ?>) - Race: <?= htmlspecialchars($animal['race']) ?> - Alimentation: <?= htmlspecialchars($animal['alimentation']) ?> - Nombre de repas: <?= htmlspecialchars($animal['nombre_de_repas']) ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
         </div>
     </div>
-
-    <div class="logout">
-        <form action="logout.php" method="post">
-            <button type="submit" class="btn btn-secondary">Déconnexion</button>
-        </form>
-    </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <footer class="bg-primary text-white text-center py-3 mt-4">
+        <p>Dashboard Utilisateur &copy; 2023</p>
+    </footer>
 </body>
 
 </html>
